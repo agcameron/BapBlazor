@@ -9,17 +9,58 @@
 @using Microsoft.Extensions.Logging
 @inject ILogger<Search> Logger
 
-<h1>Delete</h1>
 
-<p>This component demonstrates deleting from the dataaset.</p>
+<div class="container-fluid">
 
-<p>One way to tackle this problem;</p>
-<ul>
-    <li>Start with pretty much the same code as FetchStoreApps.razor.</li>
-    <li>Add a new column to the data table with a Delete link.</li>
-    <li>Send a DELETE request to the API to delete the record from API's database.</li>
-    <li>The API will need to know the Id of the record you want to delete (onclick="()=>deleteRecord(storeapp)").</li>
-    <li><a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/call-web-api?view=aspnetcore-5.0&pivots=webassembly">Call a web API from Blazor</a></li>
-    <li><a href="https://docs.microsoft.com/en-us/dotnet/api/system.net.http.httpclient.deleteasync?view=net-5.0">DeleteAsync Method</a></li>
-    <li><a href="https://docs.microsoft.com/en-us/aspnet/core/tutorials/first-web-api?view=aspnetcore-5.0&tabs=visual-studio">API Delete</a></li>
-</ul>
+    <div class="row justify-content-center" style="margin-bottom:50px">
+        <h3 class="text-center">Store Apps - Delete Single App</h3>
+    </div>
+
+    <div class="row" style="margin:25px;">
+        @if (StoreApps != null) {
+            <table class="table table-bordered table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Delete</th> <!--added delete to table head-->
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var storeapp in StoreApps) {
+                    <tr class="justify-content-center">
+                        <td>@storeapp.Id</td>
+                        <td>@storeapp.Name</td>
+                        <td><a href="#" onclick="()=>deleteRecord(storeapp)">Delete</a></td><!--added delete link to table row-->
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        @if (!StoreApps.Any()) {
+            <div class="justify-content-center">
+                <h5>No records to show</h5>
+            </div>
+        }
+    </div>
+
+</div>
+
+@code {
+
+    string responseBody = "";
+    List<StoreApp> StoreApps = new List<StoreApp>();
+
+    protected override async Task OnInitializedAsync() {
+        //changed path to url of API which is running on different port
+        var apiName = "https://localhost:44308/api/StoreApps/FirstTen";
+        var httpResponse = await client.GetAsync(apiName);
+
+        if (httpResponse.IsSuccessStatusCode) {
+            responseBody = await httpResponse.Content.ReadAsStringAsync();
+            StoreApps = JsonConvert.DeserializeObject<List<StoreApp>>(responseBody);
+            StateHasChanged();
+        }
+
+    }
+}
